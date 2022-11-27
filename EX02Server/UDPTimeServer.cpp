@@ -82,7 +82,7 @@ void main()
 	WSACleanup();
 }
 void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
-	
+
 	if (strcmp("GET_TIME", recvBuff) == 0) {
 		time_t timer;
 		time(&timer);
@@ -148,9 +148,13 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 		struct tm* times = localtime(&timer);
 		sprintf(sendBuff, "%d", times->tm_isdst);
 	}
-	else if (strcmp("GetTimeWithoutDateInCity", recvBuff) == 0) {
+	else if (!strcmp("GetTimeWithoutDateInCity1", recvBuff) ||
+		 !strcmp("GetTimeWithoutDateInCity2", recvBuff)||
+		strcmp("GetTimeWithoutDateInCity3", recvBuff)||
+		strcmp("GetTimeWithoutDateInCity4", recvBuff)||
+		strcmp("GetTimeWithoutDateInCity5", recvBuff)) {
 		int timeOffset;
-		char citiesOption = recvBuff[25];
+		char citiesOption = recvBuff[24];
 		time_t timer;
 		time(&timer);
 		struct tm* times = gmtime(&timer);
@@ -158,19 +162,19 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 		switch (citiesOption)
 		{
 		case '1': // Doha
-			timeOffset = 1;
+			timeOffset = 3;
 			break;
 		case '2': // Prague
-		//	timeOffset -= 1;
-		//	break;
-		//case 3: // New York
-		//	timeOffset -= 7;
-		//	break;
-		//case 4: // Berlin
-		//	timeOffset -= 1;
-		//	break;
-		//case 5: // Universal
-		//	break;
+			timeOffset -= 1;
+			break;
+		case 3: // New York
+			timeOffset -= 7;
+			break;
+		case 4: // Berlin
+			timeOffset -= 1;
+			break;
+		case 5: // Universal
+			break;
 		default:
 			break;
 		}
