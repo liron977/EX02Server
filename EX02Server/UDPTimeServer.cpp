@@ -82,6 +82,7 @@ void main()
 	WSACleanup();
 }
 void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
+	
 	if (strcmp("GET_TIME", recvBuff) == 0) {
 		time_t timer;
 		time(&timer);
@@ -111,4 +112,71 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 		struct tm* times = localtime(&timer);
 		sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
 	}
+	else if (strcmp("GetYear", recvBuff) == 0) {
+		time_t timer;
+		time(&timer);
+		struct tm* times = localtime(&timer);
+		sprintf(sendBuff, "%d", (times->tm_year+1900));
+	}
+	else if (strcmp("GetMonthAndDay", recvBuff) == 0) {
+		time_t timer;
+		time(&timer);
+		struct tm* times = localtime(&timer);
+		sprintf(sendBuff, "%d/%d", times->tm_mday,(times->tm_mon+1));
+	}
+	else if (strcmp("GetSecondsSinceBeginingOfMonth", recvBuff) == 0) {
+		time_t timer;
+		time(&timer);
+		struct tm* times = localtime(&timer);
+	
+		int secondFromDay = times->tm_mday * 24 * 3600;
+		int secondFromHour = times->tm_hour *3600;
+		int secondFromMin = times->tm_min * 60;
+		int seconds = times->tm_sec;
+		int res = secondFromDay + secondFromHour + secondFromMin + seconds;
+		sprintf(sendBuff, "%d", res);
+	}
+	else if (strcmp("GetWeekOfYear", recvBuff) == 0) {
+		time_t timer;
+		time(&timer);
+		struct tm* times = localtime(&timer);
+		sprintf(sendBuff, "%d", times->tm_yday / 7);
+	}
+	else if (strcmp("GetDaylightSavings", recvBuff) == 0) {
+		time_t timer;
+		time(&timer);
+		struct tm* times = localtime(&timer);
+		sprintf(sendBuff, "%d", times->tm_isdst);
+	}
+	else if (strcmp("GetTimeWithoutDateInCity", recvBuff) == 0) {
+		int timeOffset;
+		char citiesOption = recvBuff[25];
+		time_t timer;
+		time(&timer);
+		struct tm* times = gmtime(&timer);
+
+		switch (citiesOption)
+		{
+		case '1': // Doha
+			timeOffset = 1;
+			break;
+		case '2': // Prague
+		//	timeOffset -= 1;
+		//	break;
+		//case 3: // New York
+		//	timeOffset -= 7;
+		//	break;
+		//case 4: // Berlin
+		//	timeOffset -= 1;
+		//	break;
+		//case 5: // Universal
+		//	break;
+		default:
+			break;
+		}
+		sprintf(sendBuff, "%d:%d:%d", (times->tm_hour + timeOffset) % 24, times->tm_min, times->tm_sec);
+
+	}
+
 }
+
