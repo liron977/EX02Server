@@ -21,6 +21,17 @@ static auto s_Start = std::chrono::high_resolution_clock::now();
 
 void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]);
 void measureTimeLap(char(&sendBuff)[255]);
+void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]);
+void GetDaylightSavings(char(&sendBuff)[255]);
+void GetWeekOfYear(char(&sendBuff)[255]);
+void GetSecondsSinceBeginingOfMonth(char(&sendBuff)[255]);
+void GetMonthAndDay(char(&sendBuff)[255]);
+void GetYear(char(&sendBuff)[255]);
+void GetTimeWithoutDateOrSeconds(char(&sendBuff)[255]);
+void GetClientToServerDelayEstimation(char(&sendBuff)[255]);
+void GetTimeSinceEpoch(char(&sendBuff)[255]);
+void GetTimeWithoutDate(char(&sendBuff)[255]);
+void GET_TIME(char(&sendBuff)[255]);
 void main()
 {
 	WSAData wsaData;
@@ -69,7 +80,7 @@ void main()
 		}
 
 		recvBuff[bytesRecv] = '\0';
-	//	cout << "Time Server: Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
+		cout << "Time Server: Recieved: " << bytesRecv << " bytes of \"" << recvBuff << "\" message.\n";
 		calculateResponse(recvBuff, sendBuff );
 	
 		bytesSent = sendto(m_socket, sendBuff, (int)strlen(sendBuff), 0, (const sockaddr*)&client_addr, client_addr_len);
@@ -92,112 +103,147 @@ void main()
 void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 
 	if (strcmp("GET_TIME", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		strcpy(sendBuff, ctime(&timer));
-		sendBuff[strlen(sendBuff) - 1] = '\0'; //to remove the new-line from the created string
+		GET_TIME(sendBuff);
 	}
 	else if (strcmp("GetTimeWithoutDate", recvBuff) == 0) {
-
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-		sprintf(sendBuff, "%d:%d:%d", times->tm_hour, times->tm_min, times->tm_sec);
-
+		GetTimeWithoutDate(sendBuff);
 	}
 	else if (strcmp("GetTimeSinceEpoch", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		sprintf(sendBuff, "%lld", timer);
+		GetTimeSinceEpoch(sendBuff);
 	}
-	else if ((!strcmp("GetClientToServerDelayEstimation", recvBuff)) || (!strcmp("MeasureRTT", recvBuff))) {
-		DWORD currTime = GetTickCount();
-		strcpy(sendBuff, to_string(currTime).c_str());;
+	else if ((!strcmp("GetClientToServerDelayEstimation", recvBuff))
+		|| (!strcmp("MeasureRTT", recvBuff))) {
+		GetClientToServerDelayEstimation(sendBuff);
 	}
 	else if (strcmp("GetTimeWithoutDateOrSeconds", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-		sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
+		GetTimeWithoutDateOrSeconds(sendBuff);
 	}
 	else if (strcmp("GetYear", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-		sprintf(sendBuff, "%d", (times->tm_year+1900));
+		GetYear(sendBuff);
 	}
-	else if (strcmp("GetMonthAndDay", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-		sprintf(sendBuff, "%d/%d", times->tm_mday,(times->tm_mon+1));
+	else if (!strcmp("GetMonthAndDay", recvBuff)) {
+		GetMonthAndDay(sendBuff);
 	}
-	else if (strcmp("GetSecondsSinceBeginingOfMonth", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-	
-		int secondFromDay = times->tm_mday * 24 * 3600;
-		int secondFromHour = times->tm_hour *3600;
-		int secondFromMin = times->tm_min * 60;
-		int seconds = times->tm_sec;
-		int res = secondFromDay + secondFromHour + secondFromMin + seconds;
-		sprintf(sendBuff, "%d", res);
+	else if (!strcmp("GetSecondsSinceBeginingOfMonth", recvBuff)) {
+		GetSecondsSinceBeginingOfMonth(sendBuff);
 	}
 	else if (strcmp("GetWeekOfYear", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-		sprintf(sendBuff, "%d", times->tm_yday / 7);
+		GetWeekOfYear(sendBuff);
 	}
-	else if (strcmp("GetDaylightSavings", recvBuff) == 0) {
-		time_t timer;
-		time(&timer);
-		struct tm* times = localtime(&timer);
-		sprintf(sendBuff, "%d", times->tm_isdst);
+	else if (!strcmp("GetDaylightSavings", recvBuff)) {
+		GetDaylightSavings(sendBuff);
 	}
 	else if (!strcmp("GetTimeWithoutDateInCity1", recvBuff) ||
-		 !strcmp("GetTimeWithoutDateInCity2", recvBuff)||
-		!strcmp("GetTimeWithoutDateInCity3", recvBuff)||
-		!strcmp("GetTimeWithoutDateInCity4", recvBuff)||
+		!strcmp("GetTimeWithoutDateInCity2", recvBuff) ||
+		!strcmp("GetTimeWithoutDateInCity3", recvBuff) ||
+		!strcmp("GetTimeWithoutDateInCity4", recvBuff) ||
 		!strcmp("GetTimeWithoutDateInCity5", recvBuff)) {
-		int timeOffset=0;
-		char citiesOption = recvBuff[24];
-		time_t timer;
-		time(&timer);
-
-		struct tm* times = gmtime(&timer);
-
-		switch (citiesOption)
-		{
-		case '1': // Doha
-			timeOffset = 3;
-			times->tm_hour= times->tm_hour + 3;
-			break;
-		case '2': // Prague
-			times->tm_hour = times->tm_hour + 1;
-			break;
-		case '3': // New York
-			times->tm_hour = times->tm_hour-5;
-			break;
-		case '4': // Berlin
-			times->tm_hour = times->tm_hour + 1;
-			break;
-		case '5': // Universal
-			break;
-		default:
-			break;
-		}
-		strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
-		//sprintf(sendBuff, "%d:%d:%d", (times->tm_hour ) % 24, times->tm_min, times->tm_sec);
-
+		calculateTimeInSelectedCity(recvBuff, sendBuff);
 	}
+
 	else if (!strcmp("MeasureTimeLap", recvBuff)) {
 		measureTimeLap(sendBuff);
 	}
 
 
 }
+void GET_TIME(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	strcpy(sendBuff, ctime(&timer));
+	sendBuff[strlen(sendBuff) - 1] = '\0'; //to remove the new-line from the created string
+}
+void GetTimeWithoutDate(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+	sprintf(sendBuff, "%d:%d:%d", times->tm_hour, times->tm_min, times->tm_sec);
+}
+void GetTimeSinceEpoch(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	sprintf(sendBuff, "%lld", timer);
+}
+void GetClientToServerDelayEstimation(char(&sendBuff)[255]) {
+	DWORD currTime = GetTickCount();
+	strcpy(sendBuff, to_string(currTime).c_str());;
+}
+void GetTimeWithoutDateOrSeconds(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+	sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
+}
+void GetYear(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+	sprintf(sendBuff, "%d", (times->tm_year + 1900));
+}
+void GetMonthAndDay(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+	sprintf(sendBuff, "%d/%d", times->tm_mday, (times->tm_mon + 1));
+}
+void GetSecondsSinceBeginingOfMonth(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+
+	int secondFromDay = times->tm_mday * 24 * 3600;
+	int secondFromHour = times->tm_hour * 3600;
+	int secondFromMin = times->tm_min * 60;
+	int seconds = times->tm_sec;
+	int res = secondFromDay + secondFromHour + secondFromMin + seconds;
+	sprintf(sendBuff, "%d", res);
+}
+void GetWeekOfYear(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+	sprintf(sendBuff, "%d", times->tm_yday / 7);
+}
+void GetDaylightSavings(char(&sendBuff)[255]) {
+	time_t timer;
+	time(&timer);
+	struct tm* times = localtime(&timer);
+	sprintf(sendBuff, "%d", times->tm_isdst);
+}
+void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]) {
+
+	int timeOffset = 0;
+	char citiesOption = recvBuff[24];
+	time_t timer;
+	time(&timer);
+
+	struct tm* times = gmtime(&timer);
+
+	switch (citiesOption)
+	{
+	case '1': // Doha
+		timeOffset = 3;
+		times->tm_hour = times->tm_hour + 3;
+		break;
+	case '2': // Prague
+		times->tm_hour = times->tm_hour + 1;
+		break;
+	case '3': // New York
+		times->tm_hour = times->tm_hour - 5;
+		break;
+	case '4': // Berlin
+		times->tm_hour = times->tm_hour + 1;
+		break;
+	case '5': // Universal
+		break;
+	default:
+		break;
+	}
+	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
+	//sprintf(sendBuff, "%d:%d:%d", (times->tm_hour ) % 24, times->tm_min, times->tm_sec);
+}
+
+
 void measureTimeLap(char(&sendBuff)[255])
 {
 	if (s_TimeLapReqNum == 1)
