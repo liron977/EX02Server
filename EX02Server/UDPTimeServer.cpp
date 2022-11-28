@@ -115,7 +115,7 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 		|| (!strcmp("MeasureRTT", recvBuff))) {
 		GetClientToServerDelayEstimation(sendBuff);
 	}
-	else if (strcmp("GetTimeWithoutDateOrSeconds", recvBuff) == 0) {
+	else if (!strcmp("GetTimeWithoutDateOrSeconds", recvBuff)) {
 		GetTimeWithoutDateOrSeconds(sendBuff);
 	}
 	else if (strcmp("GetYear", recvBuff) == 0) {
