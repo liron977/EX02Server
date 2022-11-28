@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
@@ -9,10 +10,17 @@ using namespace std;
 #include <stdlib.h>
 #include <stdio.h>  
 #include <iostream>  
-#include<sstream>  
+#include<sstream>
+#include <chrono>
+#pragma once
 #define TIME_PORT	27015
 
+
+static int s_TimeLapReqNum = 1;
+static auto s_Start = std::chrono::high_resolution_clock::now();
+
 void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]);
+void measureTimeLap(char(&sendBuff)[255]);
 void main()
 {
 	WSAData wsaData;
@@ -150,37 +158,69 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 	}
 	else if (!strcmp("GetTimeWithoutDateInCity1", recvBuff) ||
 		 !strcmp("GetTimeWithoutDateInCity2", recvBuff)||
-		strcmp("GetTimeWithoutDateInCity3", recvBuff)||
-		strcmp("GetTimeWithoutDateInCity4", recvBuff)||
-		strcmp("GetTimeWithoutDateInCity5", recvBuff)) {
-		int timeOffset;
+		!strcmp("GetTimeWithoutDateInCity3", recvBuff)||
+		!strcmp("GetTimeWithoutDateInCity4", recvBuff)||
+		!strcmp("GetTimeWithoutDateInCity5", recvBuff)) {
+		int timeOffset=0;
 		char citiesOption = recvBuff[24];
 		time_t timer;
 		time(&timer);
+
 		struct tm* times = gmtime(&timer);
 
 		switch (citiesOption)
 		{
 		case '1': // Doha
 			timeOffset = 3;
+			times->tm_hour= times->tm_hour + 3;
 			break;
 		case '2': // Prague
-			timeOffset -= 1;
+			times->tm_hour = times->tm_hour + 1;
 			break;
-		case 3: // New York
-			timeOffset -= 7;
+		case '3': // New York
+			times->tm_hour = times->tm_hour-5;
 			break;
-		case 4: // Berlin
-			timeOffset -= 1;
+		case '4': // Berlin
+			times->tm_hour = times->tm_hour + 1;
 			break;
-		case 5: // Universal
+		case '5': // Universal
 			break;
 		default:
 			break;
 		}
-		sprintf(sendBuff, "%d:%d:%d", (times->tm_hour + timeOffset) % 24, times->tm_min, times->tm_sec);
+		strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
+		//sprintf(sendBuff, "%d:%d:%d", (times->tm_hour ) % 24, times->tm_min, times->tm_sec);
 
 	}
+	else if (!strcmp("MeasureTimeLap", recvBuff)) {
+		measureTimeLap(sendBuff);
+	}
+
 
 }
+void measureTimeLap(char(&sendBuff)[255])
+{
+	if (s_TimeLapReqNum == 1)
+	{
+		s_Start = std::chrono::high_resolution_clock::now();
+		strcpy(sendBuff, "Time lap measurement started");
+		s_TimeLapReqNum++;
+	}
+	else
+	{
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double>duration = (stop - s_Start);
 
+		if (duration.count() > 180)
+		{
+			auto start = std::chrono::high_resolution_clock::now();
+			sprintf(sendBuff, "Time lap measurement started");
+		}
+		else
+		{
+			sprintf(sendBuff, "Time Lap Measured: %lf", duration.count());
+			s_TimeLapReqNum = 0;
+		}
+
+	}
+}
