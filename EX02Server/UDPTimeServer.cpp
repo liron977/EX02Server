@@ -12,6 +12,8 @@ using namespace std;
 #include <iostream>  
 #include<sstream>
 #include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
 #pragma once
 #define TIME_PORT	27015
 
@@ -213,32 +215,36 @@ void GetDaylightSavings(char(&sendBuff)[255]) {
 void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]) {
 
 	int timeOffset = 0;
+	int tm = 0;
 	char citiesOption = recvBuff[24];
 	time_t timer;
 	time(&timer);
 
-	struct tm* times = gmtime(&timer);
+	struct tm* times = gmtime(&timer); 
+	tm = times->tm_hour;
+	 
 
 	switch (citiesOption)
 	{
 	case '1': // Doha
 		timeOffset = 3;
-		times->tm_hour = times->tm_hour + 3;
 		break;
 	case '2': // Prague
-		times->tm_hour = times->tm_hour + 1;
+		timeOffset = 1;
 		break;
 	case '3': // New York
-		times->tm_hour = times->tm_hour - 5;
+		timeOffset =-5;
 		break;
 	case '4': // Berlin
-		times->tm_hour = times->tm_hour + 1;
+		timeOffset = 1;
 		break;
 	case '5': // Universal
 		break;
 	default:
 		break;
 	}
+
+	times->tm_hour = abs((tm + timeOffset) % 24);
 	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
 	//sprintf(sendBuff, "%d:%d:%d", (times->tm_hour ) % 24, times->tm_min, times->tm_sec);
 }
