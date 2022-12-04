@@ -159,7 +159,7 @@ void GetTimeWithoutDate(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
-	sprintf(sendBuff, "%d:%d:%d", times->tm_hour, times->tm_min, times->tm_sec);
+	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
 }
 void GetTimeSinceEpoch(char(&sendBuff)[255]) {
 	time_t timer;
@@ -174,6 +174,7 @@ void GetTimeWithoutDateOrSeconds(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
+	strftime(sendBuff, sizeof(sendBuff), "%H:%M", times);
 	sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
 }
 void GetYear(char(&sendBuff)[255]) {
@@ -246,7 +247,6 @@ void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]) {
 
 	times->tm_hour = abs((tm + timeOffset) % 24);
 	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
-	//sprintf(sendBuff, "%d:%d:%d", (times->tm_hour ) % 24, times->tm_min, times->tm_sec);
 }
 
 
