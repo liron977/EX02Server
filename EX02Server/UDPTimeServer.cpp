@@ -267,11 +267,12 @@ void measureTimeLap(char(&sendBuff)[255])
 		{
 			auto start = std::chrono::high_resolution_clock::now();
 			sprintf(sendBuff, "Time lap measurement started");
+			s_TimeLapReqNum = 1;
 		}
 		else
 		{
 			sprintf(sendBuff, "Time Lap Measured: %lf", duration.count());
-			s_TimeLapReqNum = 0;
+			s_TimeLapReqNum = 1;
 		}
 
 	}
