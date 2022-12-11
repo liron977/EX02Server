@@ -133,6 +133,10 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 	else if (!strcmp("MeasureTimeLap", recvBuff)) {
 		measureTimeLap(sendBuff);
 	}
+	else
+	{
+		strcpy(sendBuff, "Unknown request");
+	}
 }
 void getTime(char(&sendBuff)[255]) {
 	time_t timer;
@@ -160,7 +164,6 @@ void getTimeWithoutDateOrSeconds(char(&sendBuff)[255]) {
 	time(&timer);
 	struct tm* times = localtime(&timer);
 	strftime(sendBuff, sizeof(sendBuff), "%H:%M", times);
-	//sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
 }
 void getYear(char(&sendBuff)[255]) {
 	time_t timer;
