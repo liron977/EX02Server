@@ -1,0 +1,13 @@
+void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]);
+void measureTimeLap(char(&sendBuff)[255]);
+void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]);
+void getDaylightSavings(char(&sendBuff)[255]);
+void getWeekOfYear(char(&sendBuff)[255]);
+void getSecondsSinceBeginingOfMonth(char(&sendBuff)[255]);
+void getMonthAndDay(char(&sendBuff)[255]);
+void getYear(char(&sendBuff)[255]);
+void getTimeWithoutDateOrSeconds(char(&sendBuff)[255]);
+void getClientToServerDelayEstimation(char(&sendBuff)[255]);
+void getTimeSinceEpoch(char(&sendBuff)[255]);
+void getTimeWithoutDate(char(&sendBuff)[255]);
+void getTime(char(&sendBuff)[255]);

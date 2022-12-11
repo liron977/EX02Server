@@ -14,26 +14,14 @@ using namespace std;
 #include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
+#include "UDPTimeServer.h"
 #pragma once
 #define TIME_PORT	27015
 
 
-static int s_TimeLapReqNum = 1;
+static int timeLapRequestNum = 1;
 static auto s_Start = std::chrono::high_resolution_clock::now();
 
-void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]);
-void measureTimeLap(char(&sendBuff)[255]);
-void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]);
-void GetDaylightSavings(char(&sendBuff)[255]);
-void GetWeekOfYear(char(&sendBuff)[255]);
-void GetSecondsSinceBeginingOfMonth(char(&sendBuff)[255]);
-void GetMonthAndDay(char(&sendBuff)[255]);
-void GetYear(char(&sendBuff)[255]);
-void GetTimeWithoutDateOrSeconds(char(&sendBuff)[255]);
-void GetClientToServerDelayEstimation(char(&sendBuff)[255]);
-void GetTimeSinceEpoch(char(&sendBuff)[255]);
-void GetTimeWithoutDate(char(&sendBuff)[255]);
-void GET_TIME(char(&sendBuff)[255]);
 void main()
 {
 	WSAData wsaData;
@@ -105,35 +93,35 @@ void main()
 void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 
 	if (strcmp("GET_TIME", recvBuff) == 0) {
-		GET_TIME(sendBuff);
+		getTime(sendBuff);
 	}
 	else if (strcmp("GetTimeWithoutDate", recvBuff) == 0) {
-		GetTimeWithoutDate(sendBuff);
+		getTimeWithoutDate(sendBuff);
 	}
 	else if (strcmp("GetTimeSinceEpoch", recvBuff) == 0) {
-		GetTimeSinceEpoch(sendBuff);
+		getTimeSinceEpoch(sendBuff);
 	}
 	else if ((!strcmp("GetClientToServerDelayEstimation", recvBuff))
 		|| (!strcmp("MeasureRTT", recvBuff))) {
-		GetClientToServerDelayEstimation(sendBuff);
+		getClientToServerDelayEstimation(sendBuff);
 	}
 	else if (!strcmp("GetTimeWithoutDateOrSeconds", recvBuff)) {
-		GetTimeWithoutDateOrSeconds(sendBuff);
+		getTimeWithoutDateOrSeconds(sendBuff);
 	}
 	else if (strcmp("GetYear", recvBuff) == 0) {
-		GetYear(sendBuff);
+		getYear(sendBuff);
 	}
 	else if (!strcmp("GetMonthAndDay", recvBuff)) {
-		GetMonthAndDay(sendBuff);
+		getMonthAndDay(sendBuff);
 	}
 	else if (!strcmp("GetSecondsSinceBeginingOfMonth", recvBuff)) {
-		GetSecondsSinceBeginingOfMonth(sendBuff);
+		getSecondsSinceBeginingOfMonth(sendBuff);
 	}
 	else if (strcmp("GetWeekOfYear", recvBuff) == 0) {
-		GetWeekOfYear(sendBuff);
+		getWeekOfYear(sendBuff);
 	}
 	else if (!strcmp("GetDaylightSavings", recvBuff)) {
-		GetDaylightSavings(sendBuff);
+		getDaylightSavings(sendBuff);
 	}
 	else if (!strcmp("GetTimeWithoutDateInCity1", recvBuff) ||
 		!strcmp("GetTimeWithoutDateInCity2", recvBuff) ||
@@ -142,54 +130,51 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 		!strcmp("GetTimeWithoutDateInCity5", recvBuff)) {
 		calculateTimeInSelectedCity(recvBuff, sendBuff);
 	}
-
 	else if (!strcmp("MeasureTimeLap", recvBuff)) {
 		measureTimeLap(sendBuff);
 	}
-
-
 }
-void GET_TIME(char(&sendBuff)[255]) {
+void getTime(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	strcpy(sendBuff, ctime(&timer));
 	sendBuff[strlen(sendBuff) - 1] = '\0'; //to remove the new-line from the created string
 }
-void GetTimeWithoutDate(char(&sendBuff)[255]) {
+void getTimeWithoutDate(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
 	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
 }
-void GetTimeSinceEpoch(char(&sendBuff)[255]) {
+void getTimeSinceEpoch(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	sprintf(sendBuff, "%lld", timer);
 }
-void GetClientToServerDelayEstimation(char(&sendBuff)[255]) {
+void getClientToServerDelayEstimation(char(&sendBuff)[255]) {
 	DWORD currTime = GetTickCount();
 	strcpy(sendBuff, to_string(currTime).c_str());;
 }
-void GetTimeWithoutDateOrSeconds(char(&sendBuff)[255]) {
+void getTimeWithoutDateOrSeconds(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
 	strftime(sendBuff, sizeof(sendBuff), "%H:%M", times);
-	sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
+	//sprintf(sendBuff, "%d:%d", times->tm_hour, times->tm_min);
 }
-void GetYear(char(&sendBuff)[255]) {
+void getYear(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
 	sprintf(sendBuff, "%d", (times->tm_year + 1900));
 }
-void GetMonthAndDay(char(&sendBuff)[255]) {
+void getMonthAndDay(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
 	sprintf(sendBuff, "%d/%d", times->tm_mday, (times->tm_mon + 1));
 }
-void GetSecondsSinceBeginingOfMonth(char(&sendBuff)[255]) {
+void getSecondsSinceBeginingOfMonth(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
@@ -201,13 +186,13 @@ void GetSecondsSinceBeginingOfMonth(char(&sendBuff)[255]) {
 	int res = secondFromDay + secondFromHour + secondFromMin + seconds;
 	sprintf(sendBuff, "%d", res);
 }
-void GetWeekOfYear(char(&sendBuff)[255]) {
+void getWeekOfYear(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
 	sprintf(sendBuff, "%d", times->tm_yday / 7);
 }
-void GetDaylightSavings(char(&sendBuff)[255]) {
+void getDaylightSavings(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
@@ -224,7 +209,6 @@ void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]) {
 	struct tm* times = gmtime(&timer); 
 	tm = times->tm_hour;
 	 
-
 	switch (citiesOption)
 	{
 	case '1': // Doha
@@ -248,31 +232,27 @@ void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]) {
 	times->tm_hour = abs((tm + timeOffset) % 24);
 	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
 }
-
-
 void measureTimeLap(char(&sendBuff)[255])
 {
-	if (s_TimeLapReqNum == 1)
+	if (timeLapRequestNum == 1)
 	{
 		s_Start = std::chrono::high_resolution_clock::now();
 		strcpy(sendBuff, "Time lap measurement started");
-		s_TimeLapReqNum++;
+		timeLapRequestNum++;
 	}
 	else
 	{
 		auto stop = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double>duration = (stop - s_Start);
 
-		if (duration.count() > 180)
-		{
-			auto start = std::chrono::high_resolution_clock::now();
+		if (duration.count() > 180)	{
+			s_Start = std::chrono::high_resolution_clock::now();
 			sprintf(sendBuff, "Time lap measurement started");
-			s_TimeLapReqNum = 1;
+			timeLapRequestNum = 2;
 		}
-		else
-		{
+		else{
 			sprintf(sendBuff, "Time Lap Measured: %lf", duration.count());
-			s_TimeLapReqNum = 1;
+			timeLapRequestNum = 1;
 		}
 
 	}
