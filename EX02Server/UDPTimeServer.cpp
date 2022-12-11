@@ -133,8 +133,7 @@ void calculateResponse(char(&recvBuff)[255], char(&sendBuff)[255]) {
 	else if (!strcmp("MeasureTimeLap", recvBuff)) {
 		measureTimeLap(sendBuff);
 	}
-	else
-	{
+	else{
 		strcpy(sendBuff, "Unknown request");
 	}
 }
