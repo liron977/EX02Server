@@ -156,7 +156,7 @@ void getTimeSinceEpoch(char(&sendBuff)[255]) {
 }
 void getClientToServerDelayEstimation(char(&sendBuff)[255]) {
 	DWORD currTime = GetTickCount();
-	strcpy(sendBuff, to_string(currTime).c_str());;
+	sprintf(sendBuff, "%d", currTime);
 }
 void getTimeWithoutDateOrSeconds(char(&sendBuff)[255]) {
 	time_t timer;
@@ -174,7 +174,8 @@ void getMonthAndDay(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
-	sprintf(sendBuff, "%d/%d", times->tm_mday, (times->tm_mon + 1));
+	strftime(sendBuff, sizeof(sendBuff), "%d/%m", times);
+
 }
 void getSecondsSinceBeginingOfMonth(char(&sendBuff)[255]) {
 	time_t timer;
@@ -192,7 +193,7 @@ void getWeekOfYear(char(&sendBuff)[255]) {
 	time_t timer;
 	time(&timer);
 	struct tm* times = localtime(&timer);
-	sprintf(sendBuff, "%d", times->tm_yday / 7);
+	sprintf(sendBuff, "%d", ((times->tm_yday / 7)+1));
 }
 void getDaylightSavings(char(&sendBuff)[255]) {
 	time_t timer;
@@ -228,11 +229,12 @@ void calculateTimeInSelectedCity(char(&recvBuff)[255], char(&sendBuff)[255]) {
 	case '5': // Universal
 		break;
 	default:
+		strcpy(sendBuff, "Unknown request");
+		return;
 		break;
 	}
-
-	times->tm_hour = abs((tm + timeOffset) % 24);
-	strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
+		times->tm_hour = abs((tm + timeOffset) % 24);
+		strftime(sendBuff, sizeof(sendBuff), "%H:%M:%S", times);
 }
 void measureTimeLap(char(&sendBuff)[255])
 {
